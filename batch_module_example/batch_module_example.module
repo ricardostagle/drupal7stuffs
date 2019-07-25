@@ -1,0 +1,57 @@
+<?php
+
+function module_menu() {
+    $items = array();
+    $items['admin/content/mytest'] = array(
+        'title' => 'mytest',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('mytest_form'),
+        'access arguments' => array('administer content'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+    return $items;
+}
+
+function module_form() {
+    $form = array();
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Submit'),
+    );
+    return $form;
+}
+
+function module_form_submit($form, $form_state) {
+    $batch = array(
+        'title' => t('Working ...'),
+        'operations' => array(),
+        'finished' => 'mytest_batch_finished',
+        'init_message' => t('Starting ...'),
+        'progress_message' => t('Processed @current out of @total.'),
+        'error_message' => t('An error occurred during processing'),
+        'progressive' => FALSE
+    );
+    $batch['operations'][] = array('mytest_initialize', array('test data'));
+    $batch['operations'][] = array('mytest_perform', array('different data'));
+    $batch['operations'][] = array('mytest_perform', array('different data'));
+    $batch['operations'][] = array('mytest_perform', array('different data'));
+    batch_set($batch);
+    batch_process('admin/content/mytest');
+}
+
+function module_initialize($d, &$context) {
+    dsm($d);
+    $context['results']['test'] = 'inti val';
+    $context['test']['test'] = 'init val';
+}
+
+function module_perform ($d, &$context) {
+    dsm($context);
+    $context['results']['test'] = uniqid();
+    $context['test']['test'] = $context['results']['test'];
+}
+
+function module_batch_finished($success, $results, $operations) {
+    dsm($results);
+}
